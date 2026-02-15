@@ -1,0 +1,2226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Equipment Management System</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e27;
+            --bg-secondary: #151a35;
+            --bg-card: #1a1f3a;
+            --accent-primary: #00ff88;
+            --accent-secondary: #00d4ff;
+            --accent-warning: #ffaa00;
+            --accent-danger: #ff3366;
+            --text-primary: #ffffff;
+            --text-secondary: #8892b0;
+            --text-muted: #495670;
+            --border: #2a3150;
+            --shadow: rgba(0, 255, 136, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Animated background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.03;
+            background: 
+                radial-gradient(circle at 20% 50%, var(--accent-primary) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, var(--accent-secondary) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, var(--accent-warning) 0%, transparent 50%);
+            animation: bgPulse 15s ease-in-out infinite alternate;
+        }
+
+        @keyframes bgPulse {
+            0% { opacity: 0.03; }
+            100% { opacity: 0.06; }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
+            padding: 2.5rem 0;
+            margin-bottom: 3rem;
+            border-bottom: 2px solid var(--accent-primary);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 200%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.05), transparent);
+            animation: headerShine 3s ease-in-out infinite;
+        }
+
+        @keyframes headerShine {
+            0%, 100% { left: -100%; }
+            50% { left: 100%; }
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+            letter-spacing: -1px;
+            margin-bottom: 0.5rem;
+            position: relative;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Navigation Tabs */
+        .nav-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            background: var(--bg-secondary);
+            padding: 0.5rem;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            animation: fadeIn 1s ease-out 0.2s both;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 1rem 1.5rem;
+            background: transparent;
+            color: var(--text-secondary);
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tab-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .tab-btn:hover::before {
+            left: 100%;
+        }
+
+        .tab-btn:hover {
+            color: var(--accent-primary);
+            transform: translateY(-2px);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: var(--bg-primary);
+            box-shadow: 0 4px 20px var(--shadow);
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Room Cards */
+        .room-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .room-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid var(--border);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .room-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s;
+        }
+
+        .room-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(0, 255, 136, 0.15);
+            border-color: var(--accent-primary);
+        }
+
+        .room-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .room-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .room-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .room-number {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 3rem;
+            font-weight: 800;
+            opacity: 0.3;
+        }
+
+        /* Equipment List */
+        .equipment-list {
+            list-style: none;
+        }
+
+        .equipment-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            border-left: 3px solid var(--accent-primary);
+            transition: all 0.3s;
+        }
+
+        .equipment-item:hover {
+            background: var(--bg-primary);
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .equipment-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+
+        .equipment-icon {
+            margin-right: 0.75rem;
+            font-size: 1.2rem;
+        }
+
+        /* Status Indicators */
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .status-box {
+            background: var(--bg-secondary);
+            padding: 1rem;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid var(--border);
+            transition: all 0.3s;
+        }
+
+        .status-box:hover {
+            transform: scale(1.05);
+            border-color: var(--accent-primary);
+        }
+
+        .status-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .status-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .status-value.total { color: var(--accent-secondary); }
+        .status-value.active { color: var(--accent-primary); }
+        .status-value.defective { color: var(--accent-danger); }
+
+        /* Table Styling */
+        .data-table {
+            width: 100%;
+            background: var(--bg-card);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .data-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            background: var(--bg-secondary);
+            color: var(--accent-primary);
+            padding: 1.25rem;
+            text-align: left;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+            border-bottom: 2px solid var(--accent-primary);
+        }
+
+        .data-table td {
+            padding: 1.25rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        .data-table tr:hover td {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Input Forms */
+        .form-section {
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: var(--bg-primary);
+            border: none;
+            border-radius: 12px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 20px var(--shadow);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px var(--shadow);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        /* Badge */
+        .badge {
+            display: inline-block;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .badge-success {
+            background: rgba(0, 255, 136, 0.2);
+            color: var(--accent-primary);
+            border: 1px solid var(--accent-primary);
+        }
+
+        .badge-warning {
+            background: rgba(255, 170, 0, 0.2);
+            color: var(--accent-warning);
+            border: 1px solid var(--accent-warning);
+        }
+
+        .badge-danger {
+            background: rgba(255, 51, 102, 0.2);
+            color: var(--accent-danger);
+            border: 1px solid var(--accent-danger);
+        }
+
+        /* Summary Cards */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, var(--bg-card), var(--bg-secondary));
+            padding: 2rem;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .summary-card::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: -20px;
+            width: 100px;
+            height: 100px;
+            background: var(--accent-primary);
+            border-radius: 50%;
+            opacity: 0.05;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 50px rgba(0, 255, 136, 0.15);
+        }
+
+        .summary-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .summary-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .summary-label {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Loading Animation */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            border: 4px solid var(--border);
+            border-top: 4px solid var(--accent-primary);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .nav-tabs {
+                flex-direction: column;
+            }
+
+            .room-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .status-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Manage Rooms Styles */
+        .manage-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .manage-room-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .manage-room-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 3px solid #f0a500;
+        }
+
+        .manage-room-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #0066a1;
+        }
+
+        .manage-room-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.3s;
+        }
+
+        .icon-btn.save {
+            background: #0066a1;
+            color: white;
+        }
+
+        .icon-btn.export {
+            background: #f0a500;
+            color: white;
+        }
+
+        .icon-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .manage-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .manage-stat-box {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .manage-stat-label {
+            font-size: 0.85rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .manage-stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .manage-stat-value.total { color: #0066a1; }
+        .manage-stat-value.active { color: #28a745; }
+        .manage-stat-value.defective { color: #dc3545; }
+
+        .equipment-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 1rem;
+            align-items: center;
+            padding: 0.75rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+        }
+
+        .equipment-label {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .equipment-input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+            transition: all 0.3s;
+        }
+
+        .equipment-input:focus {
+            outline: none;
+            border-color: #0066a1;
+            box-shadow: 0 0 0 3px rgba(0, 102, 161, 0.1);
+        }
+
+        @media (max-width: 1200px) {
+            .manage-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+    
+    <header>
+        <div class="container">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
+                <div style="background: white; padding: 0.5rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.4); position: relative; cursor: pointer;" onclick="document.getElementById('logoUpload').click()">
+                    <img id="schoolLogo" src="/mnt/user-data/uploads/1770642816582_lasalle.jpg" alt="TTC de la Salle Byumba Logo" style="height: 100px; width: auto; display: block; image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges;">
+                    <div style="position: absolute; bottom: 5px; right: 5px; background: var(--accent-primary); color: var(--bg-primary); padding: 0.3rem 0.6rem; border-radius: 6px; font-size: 0.8rem; font-weight: 700;">
+                        📷 Change Logo
+                    </div>
+                    <input type="file" id="logoUpload" accept="image/*" style="display: none;" onchange="uploadLogo(event)">
+                </div>
+                <div style="flex: 1; text-align: center;">
+                    <h1 style="margin: 0;">🏢 Room Equipment Database</h1>
+                    <p class="subtitle" style="margin: 0.5rem 0;">Real-time Equipment Tracking & Management System</p>
+                </div>
+            </div>
+            <div style="display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 12px; margin-top: 1rem;">
+                <div style="text-align: center;">
+                    <div style="color: var(--accent-primary); font-weight: 700; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Location</div>
+                    <div style="color: var(--text-secondary); font-size: 1.1rem;">📍 Gicumbi, Rwanda</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="color: var(--accent-primary); font-weight: 700; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">School</div>
+                    <div style="color: var(--text-secondary); font-size: 1.1rem;">🏫 TTC de la Salle Byumba</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="color: var(--accent-primary); font-weight: 700; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Email</div>
+                    <div style="color: var(--text-secondary); font-size: 1.1rem;">✉️ delasallettc@yahoo.fr</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="color: var(--accent-primary); font-weight: 700; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">WhatsApp</div>
+                    <div style="color: var(--text-secondary); font-size: 1.1rem;">📱 +250786480036</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Navigation -->
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="showTab('overview')">📊 Overview</button>
+            <button class="tab-btn" onclick="showTab('manage-rooms')">🏢 Manage Rooms</button>
+            <button class="tab-btn" onclick="showTab('room1')">Room 1</button>
+            <button class="tab-btn" onclick="showTab('room2')">Room 2</button>
+            <button class="tab-btn" onclick="showTab('room3')">Room 3</button>
+            <button class="tab-btn" onclick="showTab('checklist')">✅ Daily Checklist</button>
+            <button class="tab-btn" onclick="showTab('update')">⚙️ Update Status</button>
+            <button class="tab-btn" onclick="showTab('backup')">💾 Backup</button>
+            <button class="tab-btn" onclick="showTab('settings')">⚙️ Settings</button>
+        </div>
+
+        <!-- Overview Tab -->
+        <div id="overview" class="tab-content active">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h2 style="margin: 0; font-size: 2rem; color: var(--accent-primary);">📊 Dashboard Overview</h2>
+                <button class="btn" onclick="downloadOverview()" style="background: linear-gradient(135deg, var(--accent-primary), #0088ff);">
+                    📥 Download Overview Report
+                </button>
+            </div>
+
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <div class="summary-icon">🏢</div>
+                    <div class="summary-value" id="totalRooms">3</div>
+                    <div class="summary-label">Total Rooms</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-icon">📦</div>
+                    <div class="summary-value" id="totalEquipment">0</div>
+                    <div class="summary-label">Total Equipment</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-icon">✅</div>
+                    <div class="summary-value" id="totalActive">0</div>
+                    <div class="summary-label">Active Items</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-icon">⚠️</div>
+                    <div class="summary-value" id="totalDefective">0</div>
+                    <div class="summary-label">Defective Items</div>
+                </div>
+            </div>
+
+            <h2 style="margin: 3rem 0 1.5rem; font-size: 2rem; color: var(--accent-primary);">All Rooms Summary</h2>
+            <div class="data-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Room</th>
+                            <th>Equipment</th>
+                            <th>Total</th>
+                            <th>Active</th>
+                            <th>Defective</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="overviewTableBody">
+                        <!-- Data will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Manage Rooms Tab -->
+        <div id="manage-rooms" class="tab-content">
+            <div class="manage-grid">
+                <!-- Room 1 Management -->
+                <div class="manage-room-card">
+                    <div class="manage-room-header">
+                        <h3 class="manage-room-title">Room 1</h3>
+                        <div class="manage-room-actions">
+                            <button class="icon-btn save" onclick="saveRoomData('Room 1')" title="Save Changes">💾</button>
+                            <button class="icon-btn export" onclick="exportRoomCSV('Room 1')" title="Export CSV">📥</button>
+                        </div>
+                    </div>
+
+                    <div class="manage-stats">
+                        <div class="manage-stat-box">
+                            <div class="manage-stat-label">Total</div>
+                            <div class="manage-stat-value total" id="manage-room1-total">0</div>
+                        </div>
+                        <div class="manage-stat-box">
+                            <div class="manage-stat-label">Active</div>
+                            <div class="manage-stat-value active" id="manage-room1-active">0</div>
+                        </div>
+                        <div class="manage-stat-box">
+                            <div class="manage-stat-label">Defective</div>
+                            <div class="manage-stat-value defective" id="manage-room1-defective">0</div>
+                        </div>
+                    </div>
+
+                    <div id="room1-equipment-rows">
+                        <!-- Equipment rows will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Room 2 Management -->
+                <div class="manage-room-card">
+                    <div class="manage-room-header">
+                        <h3 class="manage-room-title">Room 2</h3>
+                        <div class="manage-room-actions">
+                            <button class="icon-btn save" onclick="saveRoomData('Room 2')" title="Save Changes">💾</button>
+                            <button class="icon-btn export" onclick="exportRoomCSV('Room 2')" title="Export CSV">📥</button>
+                        </div>
+                    </div>
+
+                    <div class="manage-stats">
+                        <div class="manage-stat-box">
+                            <div class="manage-stat-label">Total</div>
+                            <div class="manage-stat-value total" id="manage-room2-total">0</div>
+                        </div>
+                        <div class="manage-stat-box">
+                            <div class="manage-stat-label">Active</div>
+                            <div class="manage-stat-value active" id="manage-room2-active">0</div>
+                        </div>
+                        <div class="manage-stat-box">
+                            <div class="manage-stat-label">Defective</div>
+                            <div class="manage-stat-value defective" id="manage-room2-defective">0</div>
+                        </div>
+                    </div>
+
+                    <div id="room2-equipment-rows">
+                        <!-- Equipment rows will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Room 3 Management -->
+                <div class="manage-room-card">
+                    <div class="manage-room-header">
+                        <h3 class="manage-room-title">Room 3</h3>
+                        <div class="manage-room-actions">
+                            <button class="icon-btn save" onclick="saveRoomData('Room 3')" title="Save Changes">💾</button>
+                            <button class="icon-btn export" onclick="exportRoomCSV('Room 3')" title="Export CSV">📥</button>
+                        </div>
+                    </div>
+
+                    <div class="manage-stats">
+                        <div class="manage-stat-box">
+                            <div class="manage-stat-label">Total</div>
+                            <div class="manage-stat-value total" id="manage-room3-total">0</div>
+                        </div>
+                        <div class="manage-stat-box">
+                            <div class="manage-stat-label">Active</div>
+                            <div class="manage-stat-value active" id="manage-room3-active">0</div>
+                        </div>
+                        <div class="manage-stat-box">
+                            <div class="manage-stat-label">Defective</div>
+                            <div class="manage-stat-value defective" id="manage-room3-defective">0</div>
+                        </div>
+                    </div>
+
+                    <div id="room3-equipment-rows">
+                        <!-- Equipment rows will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Room 1 Tab -->
+        <div id="room1" class="tab-content">
+            <div class="room-card">
+                <div class="room-header">
+                    <h2 class="room-title">ROOM 1</h2>
+                    <div class="room-number">01</div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                    <button class="btn" onclick="exportRoomCSV('Room 1')" style="flex: 1; min-width: 150px;">
+                        📥 Export CSV
+                    </button>
+                    <button class="btn" onclick="archiveRoom('Room 1')" style="flex: 1; min-width: 150px; background: linear-gradient(135deg, var(--accent-warning), var(--accent-danger));">
+                        🗄️ Archive Data
+                    </button>
+                    <button class="btn" onclick="restoreRoom('Room 1')" style="flex: 1; min-width: 150px; background: linear-gradient(135deg, #00d4ff, #0088ff);">
+                        ♻️ Restore Archive
+                    </button>
+                </div>
+                
+                <ul class="equipment-list">
+                    <li class="equipment-item">
+                        <span><span class="equipment-icon">🪑</span><span class="equipment-name">Chairs</span></span>
+                    </li>
+                    <li class="equipment-item">
+                        <span><span class="equipment-icon">🪑</span><span class="equipment-name">Tables</span></span>
+                    </li>
+                    <li class="equipment-item">
+                        <span><span class="equipment-icon">💻</span><span class="equipment-name">Lenovo Laptops</span></span>
+                    </li>
+                    <li class="equipment-item">
+                        <span><span class="equipment-icon">📽️</span><span class="equipment-name">Projector</span></span>
+                    </li>
+                    <li class="equipment-item">
+                        <span><span class="equipment-icon">🔌</span><span class="equipment-name">Chargers</span></span>
+                    </li>
+                    <li class="equipment-item">
+                        <span><span class="equipment-icon">🎧</span><span class="equipment-name">Headset</span></span>
+                    </li>
+                    <li class="equipment-item">
+                        <span><span class="equipment-icon">🖥️</span><span class="equipment-name">Desktop</span></span>
+                    </li>
+                    <li class="equipment-item">
+                        <span><span class="equipment-icon">⚡</span><span class="equipment-name">Sockets for Charging</span></span>
+                    </li>
+                </ul>
+
+                <div class="status-grid" id="room1Status">
+                    <div class="status-box">
+                        <div class="status-label">Total</div>
+                        <div class="status-value total">0</div>
+                    </div>
+                    <div class="status-box">
+                        <div class="status-label">Active</div>
+                        <div class="status-value active">0</div>
+                    </div>
+                    <div class="status-box">
+                        <div class="status-label">Defective</div>
+                        <div class="status-value defective">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Room 2 Tab -->
+        <div id="room2" class="tab-content">
+            <div class="room-card">
+                <div class="room-header">
+                    <h2 class="room-title">ROOM 2</h2>
+                    <div class="room-number">02</div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                    <button class="btn" onclick="exportRoomCSV('Room 2')" style="flex: 1; min-width: 150px;">
+                        📥 Export CSV
+                    </button>
+                    <button class="btn" onclick="archiveRoom('Room 2')" style="flex: 1; min-width: 150px; background: linear-gradient(135deg, var(--accent-warning), var(--accent-danger));">
+                        🗄️ Archive Data
+                    </button>
+                    <button class="btn" onclick="restoreRoom('Room 2')" style="flex: 1; min-width: 150px; background: linear-gradient(135deg, #00d4ff, #0088ff);">
+                        ♻️ Restore Archive
+                    </button>
+                </div>
+                
+                <ul class="equipment-list">
+                    <li class="equipment-item">
+                        <span><span class="equipment-icon">🪑</span><span class="equipment-name">Chairs</span></span>
+                    </li>
+                    <li class="equipment-item">
+                        <span><span class="equipment-icon">🪑</span><span class="equipment-name">Tables</span></span>
+                    </li>
+                    <li class="equipment-item">
+                        <span><span class="equipment-icon">💻</span><span class="equipment-name">Lenovo Laptops</span></span>
+                    </li>
+                    <li class="equipment-item">
+                        <span><span class="equipment-icon">📽️</span><span class="equipment-name">Projector</span></span>
+                    </li>
+                    <li class="equipment-item">
+                        <span><span class="equipment-icon">🔌</span><span class="equipment-name">Chargers</span></span>
+                    </li>
+                    <li class="equipment-item">
+                        <span><span class="equipment-icon">⚡</span><span class="equipment-name">Sockets for Charging</span></span>
+                    </li>
+                </ul>
+
+                <div class="status-grid" id="room2Status">
+                    <div class="status-box">
+                        <div class="status-label">Total</div>
+                        <div class="status-value total">0</div>
+                    </div>
+                    <div class="status-box">
+                        <div class="status-label">Active</div>
+                        <div class="status-value active">0</div>
+                    </div>
+                    <div class="status-box">
+                        <div class="status-label">Defective</div>
+                        <div class="status-value defective">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Room 3 Tab -->
+        <div id="room3" class="tab-content">
+            <div class="room-card">
+                <div class="room-header">
+                    <h2 class="room-title">ROOM 3</h2>
+                    <div class="room-number">03</div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                    <button class="btn" onclick="exportRoomCSV('Room 3')" style="flex: 1; min-width: 150px;">
+                        📥 Export CSV
+                    </button>
+                    <button class="btn" onclick="archiveRoom('Room 3')" style="flex: 1; min-width: 150px; background: linear-gradient(135deg, var(--accent-warning), var(--accent-danger));">
+                        🗄️ Archive Data
+                    </button>
+                    <button class="btn" onclick="restoreRoom('Room 3')" style="flex: 1; min-width: 150px; background: linear-gradient(135deg, #00d4ff, #0088ff);">
+                        ♻️ Restore Archive
+                    </button>
+                </div>
+                
+                <ul class="equipment-list">
+                    <li class="equipment-item">
+                        <span><span class="equipment-icon">🪑</span><span class="equipment-name">Chairs</span></span>
+                    </li>
+                    <li class="equipment-item">
+                        <span><span class="equipment-icon">🪑</span><span class="equipment-name">Tables</span></span>
+                    </li>
+                    <li class="equipment-item">
+                        <span><span class="equipment-icon">💻</span><span class="equipment-name">Lenovo Laptops</span></span>
+                    </li>
+                    <li class="equipment-item">
+                        <span><span class="equipment-icon">📽️</span><span class="equipment-name">Projector</span></span>
+                    </li>
+                    <li class="equipment-item">
+                        <span><span class="equipment-icon">🔌</span><span class="equipment-name">Chargers</span></span>
+                    </li>
+                    <li class="equipment-item">
+                        <span><span class="equipment-icon">🎧</span><span class="equipment-name">Headset</span></span>
+                    </li>
+                    <li class="equipment-item">
+                        <span><span class="equipment-icon">🖥️</span><span class="equipment-name">Desktop</span></span>
+                    </li>
+                    <li class="equipment-item">
+                        <span><span class="equipment-icon">📱</span><span class="equipment-name">Lenovo Tablets</span></span>
+                    </li>
+                    <li class="equipment-item">
+                        <span><span class="equipment-icon">💼</span><span class="equipment-name">Briefcases (2)</span></span>
+                    </li>
+                    <li class="equipment-item">
+                        <span><span class="equipment-icon">⚡</span><span class="equipment-name">Sockets for Charging</span></span>
+                    </li>
+                </ul>
+
+                <div class="status-grid" id="room3Status">
+                    <div class="status-box">
+                        <div class="status-label">Total</div>
+                        <div class="status-value total">2</div>
+                    </div>
+                    <div class="status-box">
+                        <div class="status-label">Active</div>
+                        <div class="status-value active">2</div>
+                    </div>
+                    <div class="status-box">
+                        <div class="status-label">Defective</div>
+                        <div class="status-value defective">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Daily Checklist Tab -->
+        <div id="checklist" class="tab-content">
+            <h2 style="margin-bottom: 2rem; font-size: 2rem; color: var(--accent-primary);">📋 Daily Equipment Checklist</h2>
+            
+            <div class="form-section">
+                <h3 style="margin-bottom: 1.5rem; color: var(--accent-secondary);">Add Checklist Entry</h3>
+                <form id="checklistForm">
+                    <div class="form-group">
+                        <label class="form-label">Room</label>
+                        <select class="form-select" id="checklistRoom" required>
+                            <option value="">Select Room</option>
+                            <option value="Room 1">Room 1</option>
+                            <option value="Room 2">Room 2</option>
+                            <option value="Room 3">Room 3</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Equipment</label>
+                        <select class="form-select" id="checklistEquipment" required>
+                            <option value="">Select Equipment</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Checked By</label>
+                        <input type="text" class="form-input" id="checklistCheckedBy" placeholder="Your name" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Condition Status</label>
+                        <select class="form-select" id="checklistStatus" required>
+                            <option value="">Select Status</option>
+                            <option value="Good">Good</option>
+                            <option value="Needs Attention">Needs Attention</option>
+                            <option value="Defective">Defective</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Quantity Verified</label>
+                        <input type="number" class="form-input" id="checklistQuantity" placeholder="0" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Active Count</label>
+                        <input type="number" class="form-input" id="checklistActive" placeholder="0" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Defective Count</label>
+                        <input type="number" class="form-input" id="checklistDefective" placeholder="0" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Notes</label>
+                        <textarea class="form-textarea" id="checklistNotes" placeholder="Any observations or issues..."></textarea>
+                    </div>
+                    <button type="submit" class="btn">✅ Save Checklist Entry</button>
+                </form>
+            </div>
+
+            <h3 style="margin: 3rem 0 1.5rem; font-size: 1.5rem; color: var(--accent-primary);">Recent Checklist Entries</h3>
+            <div class="data-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Room</th>
+                            <th>Equipment</th>
+                            <th>Checked By</th>
+                            <th>Status</th>
+                            <th>Active</th>
+                            <th>Defective</th>
+                        </tr>
+                    </thead>
+                    <tbody id="checklistTableBody">
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                                No checklist entries yet. Add your first entry above!
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Update Status Tab -->
+        <div id="update" class="tab-content">
+            <h2 style="margin-bottom: 2rem; font-size: 2rem; color: var(--accent-primary);">⚙️ Update Equipment Status</h2>
+            
+            <div class="form-section">
+                <form id="updateForm">
+                    <div class="form-group">
+                        <label class="form-label">Room</label>
+                        <select class="form-select" id="updateRoom" required>
+                            <option value="">Select Room</option>
+                            <option value="Room 1">Room 1</option>
+                            <option value="Room 2">Room 2</option>
+                            <option value="Room 3">Room 3</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Equipment</label>
+                        <select class="form-select" id="updateEquipment" required>
+                            <option value="">Select Equipment</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Active Quantity</label>
+                        <input type="number" class="form-input" id="updateActive" placeholder="0" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Defective Quantity</label>
+                        <input type="number" class="form-input" id="updateDefective" placeholder="0" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Notes</label>
+                        <textarea class="form-textarea" id="updateNotes" placeholder="Reason for status update..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Recorded By</label>
+                        <input type="text" class="form-input" id="updateRecordedBy" placeholder="Your name" required>
+                    </div>
+                    <button type="submit" class="btn">💾 Update Equipment Status</button>
+                </form>
+            </div>
+
+            <h3 style="margin: 3rem 0 1.5rem; font-size: 1.5rem; color: var(--accent-primary);">Recent Status Updates</h3>
+            <div class="data-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Room</th>
+                            <th>Equipment</th>
+                            <th>Active</th>
+                            <th>Defective</th>
+                            <th>Recorded By</th>
+                        </tr>
+                    </thead>
+                    <tbody id="updateTableBody">
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                                No updates yet. Add your first update above!
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Backup Tab -->
+        <div id="backup" class="tab-content">
+            <h2 style="margin-bottom: 2rem; font-size: 2rem; color: var(--accent-primary);">💾 Backup & Restore</h2>
+            
+            <div class="room-grid">
+                <!-- Room 1 Backup -->
+                <div class="room-card">
+                    <div class="room-header">
+                        <h2 class="room-title">ROOM 1</h2>
+                        <div class="room-number">01</div>
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1.5rem;">
+                        <button class="btn" onclick="exportRoomCSV('Room 1')">
+                            📥 Export Room 1 Data
+                        </button>
+                        <button class="btn" onclick="archiveRoom('Room 1')" style="background: linear-gradient(135deg, var(--accent-warning), var(--accent-danger));">
+                            🗄️ Archive & Reset
+                        </button>
+                        <button class="btn" onclick="restoreRoom('Room 1')" style="background: linear-gradient(135deg, #00d4ff, #0088ff);">
+                            ♻️ Restore From Archive
+                        </button>
+                        <button class="btn" onclick="viewArchiveInfo('Room 1')">
+                            📋 View Archive Info
+                        </button>
+                    </div>
+
+                    <div id="archive-info-room1" style="margin-top: 1.5rem; padding: 1rem; background: var(--bg-secondary); border-radius: 12px; display: none;">
+                        <h4 style="color: var(--accent-primary); margin-bottom: 0.5rem;">Archive Information</h4>
+                        <div id="archive-details-room1" style="color: var(--text-secondary);"></div>
+                    </div>
+                </div>
+
+                <!-- Room 2 Backup -->
+                <div class="room-card">
+                    <div class="room-header">
+                        <h2 class="room-title">ROOM 2</h2>
+                        <div class="room-number">02</div>
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1.5rem;">
+                        <button class="btn" onclick="exportRoomCSV('Room 2')">
+                            📥 Export Room 2 Data
+                        </button>
+                        <button class="btn" onclick="archiveRoom('Room 2')" style="background: linear-gradient(135deg, var(--accent-warning), var(--accent-danger));">
+                            🗄️ Archive & Reset
+                        </button>
+                        <button class="btn" onclick="restoreRoom('Room 2')" style="background: linear-gradient(135deg, #00d4ff, #0088ff);">
+                            ♻️ Restore From Archive
+                        </button>
+                        <button class="btn" onclick="viewArchiveInfo('Room 2')">
+                            📋 View Archive Info
+                        </button>
+                    </div>
+
+                    <div id="archive-info-room2" style="margin-top: 1.5rem; padding: 1rem; background: var(--bg-secondary); border-radius: 12px; display: none;">
+                        <h4 style="color: var(--accent-primary); margin-bottom: 0.5rem;">Archive Information</h4>
+                        <div id="archive-details-room2" style="color: var(--text-secondary);"></div>
+                    </div>
+                </div>
+
+                <!-- Room 3 Backup -->
+                <div class="room-card">
+                    <div class="room-header">
+                        <h2 class="room-title">ROOM 3</h2>
+                        <div class="room-number">03</div>
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1.5rem;">
+                        <button class="btn" onclick="exportRoomCSV('Room 3')">
+                            📥 Export Room 3 Data
+                        </button>
+                        <button class="btn" onclick="archiveRoom('Room 3')" style="background: linear-gradient(135deg, var(--accent-warning), var(--accent-danger));">
+                            🗄️ Archive & Reset
+                        </button>
+                        <button class="btn" onclick="restoreRoom('Room 3')" style="background: linear-gradient(135deg, #00d4ff, #0088ff);">
+                            ♻️ Restore From Archive
+                        </button>
+                        <button class="btn" onclick="viewArchiveInfo('Room 3')">
+                            📋 View Archive Info
+                        </button>
+                    </div>
+
+                    <div id="archive-info-room3" style="margin-top: 1.5rem; padding: 1rem; background: var(--bg-secondary); border-radius: 12px; display: none;">
+                        <h4 style="color: var(--accent-primary); margin-bottom: 0.5rem;">Archive Information</h4>
+                        <div id="archive-details-room3" style="color: var(--text-secondary);"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Complete Backup Section -->
+            <div style="margin-top: 3rem; padding: 2rem; background: linear-gradient(135deg, rgba(0,102,161,0.1), rgba(240,165,0,0.1)); border-radius: 16px; border: 2px solid var(--accent-primary);">
+                <h3 style="color: var(--accent-primary); margin-bottom: 1rem; font-size: 1.5rem;">🌐 Complete System Backup</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Export all data from all rooms in one comprehensive backup file.</p>
+                <button class="btn" onclick="exportAllData()" style="width: 100%; max-width: 400px;">
+                    📦 Export Complete Database Backup
+                </button>
+            </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div id="settings" class="tab-content">
+            <h2 style="margin-bottom: 2rem; font-size: 2rem; color: var(--accent-primary);">⚙️ Settings & Configuration</h2>
+            
+            <!-- School Information Section -->
+            <div class="room-card" style="margin-bottom: 2rem;">
+                <h3 style="color: var(--accent-primary); margin-bottom: 1.5rem; font-size: 1.5rem;">🏫 School Information</h3>
+                
+                <div class="form-section">
+                    <div class="form-group">
+                        <label class="form-label">School Logo</label>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <img id="settingsLogo" src="/mnt/user-data/uploads/1770642816582_lasalle.jpg" style="height: 80px; width: auto; border: 2px solid var(--accent-primary); border-radius: 8px;">
+                            <button class="btn" onclick="document.getElementById('logoUpload').click()">
+                                📷 Change Logo
+                            </button>
+                        </div>
+                        <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.5rem;">
+                            Click to upload a new school logo. Recommended size: 200x200px or larger.
+                        </p>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">School Name</label>
+                        <input type="text" class="form-input" id="schoolName" value="TTC de la Salle Byumba" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Location</label>
+                        <input type="text" class="form-input" id="schoolLocation" value="Gicumbi, Rwanda" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-input" id="schoolEmail" value="delasallettc@yahoo.fr" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">WhatsApp</label>
+                        <input type="tel" class="form-input" id="schoolWhatsapp" value="+250786480036" readonly>
+                    </div>
+
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 1rem;">
+                        ℹ️ To modify school details, please contact the system administrator.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Access Keys Section -->
+            <div class="room-card" style="margin-bottom: 2rem;">
+                <h3 style="color: var(--accent-primary); margin-bottom: 1.5rem; font-size: 1.5rem;">🔑 Access Keys & Security</h3>
+                
+                <div style="background: rgba(240,165,0,0.1); border-left: 4px solid var(--accent-warning); padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                    <h4 style="color: var(--accent-warning); margin-bottom: 0.5rem;">⚠️ Important Security Notice</h4>
+                    <p style="color: var(--text-secondary); margin: 0;">
+                        This dashboard uses browser localStorage for data storage. All data is stored locally on this device only. 
+                        No data is sent to external servers. Always backup your data regularly.
+                    </p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Data Storage Location</label>
+                    <input type="text" class="form-input" value="Browser Local Storage (This Device Only)" readonly>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Last Backup</label>
+                    <input type="text" class="form-input" id="lastBackup" value="Never" readonly>
+                </div>
+
+                <button class="btn" onclick="clearAllData()" style="background: linear-gradient(135deg, var(--accent-danger), #c82333); margin-top: 1rem;">
+                    🗑️ Clear All Data (Reset System)
+                </button>
+            </div>
+
+            <!-- System Information -->
+            <div class="room-card">
+                <h3 style="color: var(--accent-primary); margin-bottom: 1.5rem; font-size: 1.5rem;">ℹ️ System Information</h3>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                    <div style="background: var(--bg-secondary); padding: 1rem; border-radius: 8px;">
+                        <div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.5rem;">Version</div>
+                        <div style="color: var(--accent-primary); font-weight: 700; font-size: 1.2rem;">1.0.0</div>
+                    </div>
+                    <div style="background: var(--bg-secondary); padding: 1rem; border-radius: 8px;">
+                        <div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.5rem;">Total Rooms</div>
+                        <div style="color: var(--accent-primary); font-weight: 700; font-size: 1.2rem;">3</div>
+                    </div>
+                    <div style="background: var(--bg-secondary); padding: 1rem; border-radius: 8px;">
+                        <div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.5rem;">Equipment Types</div>
+                        <div style="color: var(--accent-primary); font-weight: 700; font-size: 1.2rem;" id="equipmentTypes">10</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    <script>
+        // Equipment data structure
+        const equipmentData = {
+            'Room 1': ['Chairs', 'Tables', 'Lenovo Laptops', 'Projector', 'Chargers', 'Headset', 'Desktop', 'Sockets for Charging'],
+            'Room 2': ['Chairs', 'Tables', 'Lenovo Laptops', 'Projector', 'Chargers', 'Sockets for Charging'],
+            'Room 3': ['Chairs', 'Tables', 'Lenovo Laptops', 'Projector', 'Chargers', 'Headset', 'Desktop', 'Lenovo Tablets', 'Briefcases', 'Sockets for Charging']
+        };
+
+        // Storage for equipment status
+        let inventory = {};
+        let checklistEntries = [];
+        let statusUpdates = [];
+        let archivedData = {}; // Store archived data for restoration
+
+        // Load saved logo on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            const savedLogo = localStorage.getItem('schoolLogo');
+            if (savedLogo) {
+                document.getElementById('schoolLogo').src = savedLogo;
+            }
+        });
+
+        // Initialize inventory
+        function initializeInventory() {
+            for (const [room, equipment] of Object.entries(equipmentData)) {
+                inventory[room] = {};
+                equipment.forEach(eq => {
+                    inventory[room][eq] = {
+                        total: eq === 'Briefcases' && room === 'Room 3' ? 2 : 0,
+                        active: eq === 'Briefcases' && room === 'Room 3' ? 2 : 0,
+                        defective: 0
+                    };
+                });
+            }
+            updateAllDisplays();
+            populateManageRooms();
+        }
+
+        // Populate Manage Rooms interface
+        function populateManageRooms() {
+            const rooms = [
+                { name: 'Room 1', id: 'room1' },
+                { name: 'Room 2', id: 'room2' },
+                { name: 'Room 3', id: 'room3' }
+            ];
+
+            rooms.forEach(room => {
+                const container = document.getElementById(`${room.id}-equipment-rows`);
+                if (!container) return;
+
+                let html = '';
+                const equipment = equipmentData[room.name];
+                
+                equipment.forEach(eq => {
+                    const data = inventory[room.name][eq] || { total: 0, active: 0, defective: 0 };
+                    html += `
+                        <div class="equipment-row">
+                            <div class="equipment-label">${eq}</div>
+                            <input type="number" class="equipment-input" 
+                                   id="${room.id}-${eq.replace(/\s+/g, '-')}-total" 
+                                   value="${data.total}" min="0"
+                                   onchange="updateRoomInputs('${room.name}', '${eq}')">
+                            <input type="number" class="equipment-input" 
+                                   id="${room.id}-${eq.replace(/\s+/g, '-')}-active" 
+                                   value="${data.active}" min="0"
+                                   onchange="updateRoomInputs('${room.name}', '${eq}')">
+                            <input type="number" class="equipment-input" 
+                                   id="${room.id}-${eq.replace(/\s+/g, '-')}-defective" 
+                                   value="${data.defective}" min="0"
+                                   onchange="updateRoomInputs('${room.name}', '${eq}')">
+                        </div>
+                    `;
+                });
+
+                container.innerHTML = html;
+                updateManageRoomStats(room.name, room.id);
+            });
+        }
+
+        // Update room inputs when values change
+        function updateRoomInputs(roomName, equipment) {
+            const roomId = roomName.toLowerCase().replace(' ', '');
+            const eqId = equipment.replace(/\s+/g, '-');
+            
+            const total = parseInt(document.getElementById(`${roomId}-${eqId}-total`).value) || 0;
+            const active = parseInt(document.getElementById(`${roomId}-${eqId}-active`).value) || 0;
+            const defective = parseInt(document.getElementById(`${roomId}-${eqId}-defective`).value) || 0;
+
+            // Update inventory (but don't save yet - wait for save button)
+            if (!inventory[roomName]) inventory[roomName] = {};
+            inventory[roomName][equipment] = { total, active, defective };
+
+            updateManageRoomStats(roomName, roomId);
+        }
+
+        // Update stats for manage rooms view
+        function updateManageRoomStats(roomName, roomId) {
+            let total = 0, active = 0, defective = 0;
+            
+            if (inventory[roomName]) {
+                for (const data of Object.values(inventory[roomName])) {
+                    total += data.total;
+                    active += data.active;
+                    defective += data.defective;
+                }
+            }
+
+            const totalEl = document.getElementById(`manage-${roomId}-total`);
+            const activeEl = document.getElementById(`manage-${roomId}-active`);
+            const defectiveEl = document.getElementById(`manage-${roomId}-defective`);
+
+            if (totalEl) totalEl.textContent = total;
+            if (activeEl) activeEl.textContent = active;
+            if (defectiveEl) defectiveEl.textContent = defective;
+        }
+
+        // Save room data
+        function saveRoomData(roomName) {
+            const roomId = roomName.toLowerCase().replace(' ', '');
+            const equipment = equipmentData[roomName];
+            
+            equipment.forEach(eq => {
+                const eqId = eq.replace(/\s+/g, '-');
+                const total = parseInt(document.getElementById(`${roomId}-${eqId}-total`).value) || 0;
+                const active = parseInt(document.getElementById(`${roomId}-${eqId}-active`).value) || 0;
+                const defective = parseInt(document.getElementById(`${roomId}-${eqId}-defective`).value) || 0;
+
+                inventory[roomName][eq] = { total, active, defective };
+            });
+
+            updateAllDisplays();
+            updateManageRoomStats(roomName, roomId);
+            
+            alert(`✅ ${roomName} data saved successfully!`);
+        }
+
+        // View archive info
+        function viewArchiveInfo(roomName) {
+            const roomNum = roomName.split(' ')[1];
+            const infoDiv = document.getElementById(`archive-info-room${roomNum}`);
+            const detailsDiv = document.getElementById(`archive-details-room${roomNum}`);
+            
+            if (!archivedData[roomName]) {
+                detailsDiv.innerHTML = '<p style="color: var(--accent-danger);">❌ No archive found for this room.</p>';
+            } else {
+                const archive = archivedData[roomName];
+                let totalItems = 0, totalActive = 0, totalDefective = 0;
+                
+                for (const data of Object.values(archive.data)) {
+                    totalItems += data.total;
+                    totalActive += data.active;
+                    totalDefective += data.defective;
+                }
+
+                detailsDiv.innerHTML = `
+                    <p><strong>Archive Date:</strong> ${archive.date}</p>
+                    <p><strong>Archive Time:</strong> ${archive.time}</p>
+                    <p><strong>Total Items:</strong> ${totalItems}</p>
+                    <p><strong>Active:</strong> ${totalActive}</p>
+                    <p><strong>Defective:</strong> ${totalDefective}</p>
+                `;
+            }
+            
+            // Toggle visibility
+            infoDiv.style.display = infoDiv.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Tab switching
+        function showTab(tabName) {
+            const tabs = document.querySelectorAll('.tab-content');
+            const buttons = document.querySelectorAll('.tab-btn');
+            
+            tabs.forEach(tab => tab.classList.remove('active'));
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Update equipment dropdown based on room selection
+        document.getElementById('checklistRoom')?.addEventListener('change', function() {
+            updateEquipmentDropdown('checklistEquipment', this.value);
+        });
+
+        document.getElementById('updateRoom')?.addEventListener('change', function() {
+            updateEquipmentDropdown('updateEquipment', this.value);
+        });
+
+        function updateEquipmentDropdown(selectId, room) {
+            const select = document.getElementById(selectId);
+            select.innerHTML = '<option value="">Select Equipment</option>';
+            
+            if (room && equipmentData[room]) {
+                equipmentData[room].forEach(eq => {
+                    const option = document.createElement('option');
+                    option.value = eq;
+                    option.textContent = eq;
+                    select.appendChild(option);
+                });
+            }
+        }
+
+        // Handle checklist form submission
+        document.getElementById('checklistForm')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const entry = {
+                date: new Date().toISOString().split('T')[0],
+                room: document.getElementById('checklistRoom').value,
+                equipment: document.getElementById('checklistEquipment').value,
+                checkedBy: document.getElementById('checklistCheckedBy').value,
+                status: document.getElementById('checklistStatus').value,
+                quantity: parseInt(document.getElementById('checklistQuantity').value),
+                active: parseInt(document.getElementById('checklistActive').value),
+                defective: parseInt(document.getElementById('checklistDefective').value),
+                notes: document.getElementById('checklistNotes').value
+            };
+            
+            checklistEntries.unshift(entry);
+            updateChecklistTable();
+            
+            // Update inventory
+            if (inventory[entry.room] && inventory[entry.room][entry.equipment]) {
+                inventory[entry.room][entry.equipment] = {
+                    total: entry.active + entry.defective,
+                    active: entry.active,
+                    defective: entry.defective
+                };
+                updateAllDisplays();
+            }
+            
+            this.reset();
+            alert('✅ Checklist entry saved successfully!');
+        });
+
+        // Handle update form submission
+        document.getElementById('updateForm')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const update = {
+                date: new Date().toISOString().split('T')[0],
+                room: document.getElementById('updateRoom').value,
+                equipment: document.getElementById('updateEquipment').value,
+                active: parseInt(document.getElementById('updateActive').value),
+                defective: parseInt(document.getElementById('updateDefective').value),
+                notes: document.getElementById('updateNotes').value,
+                recordedBy: document.getElementById('updateRecordedBy').value
+            };
+            
+            statusUpdates.unshift(update);
+            updateStatusTable();
+            
+            // Update inventory
+            if (inventory[update.room] && inventory[update.room][update.equipment]) {
+                inventory[update.room][update.equipment] = {
+                    total: update.active + update.defective,
+                    active: update.active,
+                    defective: update.defective
+                };
+                updateAllDisplays();
+            }
+            
+            this.reset();
+            alert('💾 Equipment status updated successfully!');
+        });
+
+        // Update checklist table
+        function updateChecklistTable() {
+            const tbody = document.getElementById('checklistTableBody');
+            
+            if (checklistEntries.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                            No checklist entries yet. Add your first entry above!
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = checklistEntries.map(entry => `
+                <tr>
+                    <td>${entry.date}</td>
+                    <td>${entry.room}</td>
+                    <td>${entry.equipment}</td>
+                    <td>${entry.checkedBy}</td>
+                    <td>
+                        <span class="badge ${entry.status === 'Good' ? 'badge-success' : entry.status === 'Needs Attention' ? 'badge-warning' : 'badge-danger'}">
+                            ${entry.status}
+                        </span>
+                    </td>
+                    <td>${entry.active}</td>
+                    <td>${entry.defective}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Update status table
+        function updateStatusTable() {
+            const tbody = document.getElementById('updateTableBody');
+            
+            if (statusUpdates.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                            No updates yet. Add your first update above!
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = statusUpdates.map(update => `
+                <tr>
+                    <td>${update.date}</td>
+                    <td>${update.room}</td>
+                    <td>${update.equipment}</td>
+                    <td>${update.active}</td>
+                    <td>${update.defective}</td>
+                    <td>${update.recordedBy}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Update all displays
+        function updateAllDisplays() {
+            updateOverviewTable();
+            updateSummaryCards();
+            updateRoomStatus('room1', 'Room 1');
+            updateRoomStatus('room2', 'Room 2');
+            updateRoomStatus('room3', 'Room 3');
+        }
+
+        // Update overview table
+        function updateOverviewTable() {
+            const tbody = document.getElementById('overviewTableBody');
+            let html = '';
+            
+            for (const [room, equipment] of Object.entries(inventory)) {
+                for (const [eq, data] of Object.entries(equipment)) {
+                    const statusBadge = data.defective > 0 ? 
+                        '<span class="badge badge-danger">Needs Repair</span>' : 
+                        '<span class="badge badge-success">Good</span>';
+                    
+                    html += `
+                        <tr>
+                            <td>${room}</td>
+                            <td>${eq}</td>
+                            <td>${data.total}</td>
+                            <td>${data.active}</td>
+                            <td>${data.defective}</td>
+                            <td>${statusBadge}</td>
+                        </tr>
+                    `;
+                }
+            }
+            
+            tbody.innerHTML = html;
+        }
+
+        // Update summary cards
+        function updateSummaryCards() {
+            let totalEquipment = 0;
+            let totalActive = 0;
+            let totalDefective = 0;
+            
+            for (const room of Object.values(inventory)) {
+                for (const data of Object.values(room)) {
+                    totalEquipment += data.total;
+                    totalActive += data.active;
+                    totalDefective += data.defective;
+                }
+            }
+            
+            document.getElementById('totalEquipment').textContent = totalEquipment;
+            document.getElementById('totalActive').textContent = totalActive;
+            document.getElementById('totalDefective').textContent = totalDefective;
+        }
+
+        // Update room status
+        function updateRoomStatus(roomId, roomName) {
+            const statusDiv = document.getElementById(roomId + 'Status');
+            if (!statusDiv) return;
+            
+            let total = 0;
+            let active = 0;
+            let defective = 0;
+            
+            if (inventory[roomName]) {
+                for (const data of Object.values(inventory[roomName])) {
+                    total += data.total;
+                    active += data.active;
+                    defective += data.defective;
+                }
+            }
+            
+            statusDiv.innerHTML = `
+                <div class="status-box">
+                    <div class="status-label">Total</div>
+                    <div class="status-value total">${total}</div>
+                </div>
+                <div class="status-box">
+                    <div class="status-label">Active</div>
+                    <div class="status-value active">${active}</div>
+                </div>
+                <div class="status-box">
+                    <div class="status-label">Defective</div>
+                    <div class="status-value defective">${defective}</div>
+                </div>
+            `;
+        }
+
+        // Upload and save logo permanently
+        function uploadLogo(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Check if it's an image
+            if (!file.type.startsWith('image/')) {
+                alert('❌ Please select an image file (PNG, JPG, etc.)');
+                return;
+            }
+
+            // Check file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('❌ Image file is too large. Please choose an image smaller than 5MB.');
+                return;
+            }
+
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const imageData = e.target.result;
+                
+                // Save to localStorage for permanent storage
+                localStorage.setItem('schoolLogo', imageData);
+                
+                // Update both displayed logos
+                document.getElementById('schoolLogo').src = imageData;
+                const settingsLogo = document.getElementById('settingsLogo');
+                if (settingsLogo) {
+                    settingsLogo.src = imageData;
+                }
+                
+                alert('✅ School logo updated successfully!\n\nYour logo has been saved permanently and will appear every time you open this dashboard.');
+            };
+
+            reader.onerror = function() {
+                alert('❌ Error reading the image file. Please try again.');
+            };
+
+            reader.readAsDataURL(file);
+        }
+
+        // Export all data from all rooms
+        function exportAllData() {
+            const currentDate = new Date().toISOString().split('T')[0];
+            const currentTime = new Date().toLocaleTimeString();
+            
+            let csvContent = "data:text/csv;charset=utf-8,";
+            
+            // Header
+            csvContent += "TTC de la Salle Byumba - COMPLETE DATABASE BACKUP\n";
+            csvContent += "Location: Gicumbi, Rwanda\n";
+            csvContent += "Email: delasallettc@yahoo.fr | WhatsApp: +250786480036\n";
+            csvContent += "Backup Date: " + currentDate + " at " + currentTime + "\n\n";
+            csvContent += "==========================================================================\n\n";
+            
+            // Export all rooms
+            for (const [room, equipment] of Object.entries(inventory)) {
+                csvContent += room.toUpperCase() + "\n";
+                csvContent += "Equipment,Total,Active,Defective,Status\n";
+                
+                for (const [eq, data] of Object.entries(equipment)) {
+                    const status = data.defective > 0 ? 'Needs Repair' : (data.total > 0 ? 'Good' : 'None');
+                    csvContent += `"${eq}",${data.total},${data.active},${data.defective},"${status}"\n`;
+                }
+                csvContent += "\n";
+            }
+            
+            // Summary
+            let totalAll = 0, activeAll = 0, defectiveAll = 0;
+            for (const equipment of Object.values(inventory)) {
+                for (const data of Object.values(equipment)) {
+                    totalAll += data.total;
+                    activeAll += data.active;
+                    defectiveAll += data.defective;
+                }
+            }
+            
+            csvContent += "==========================================================================\n";
+            csvContent += "SUMMARY\n";
+            csvContent += `Total Items,${totalAll}\n`;
+            csvContent += `Active Items,${activeAll}\n`;
+            csvContent += `Defective Items,${defectiveAll}\n\n`;
+            
+            csvContent += "This backup can be used to restore your data if needed.\n";
+            csvContent += "Keep this file in a safe location.\n";
+            
+            // Download
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `COMPLETE_BACKUP_${currentDate}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Update last backup time
+            localStorage.setItem('lastBackup', currentDate + ' at ' + currentTime);
+            const lastBackupEl = document.getElementById('lastBackup');
+            if (lastBackupEl) {
+                lastBackupEl.value = currentDate + ' at ' + currentTime;
+            }
+            
+            alert(`✅ Complete database backup created successfully!\n\nFilename: COMPLETE_BACKUP_${currentDate}.csv\n\nThis backup includes all rooms and equipment data.\nKeep this file safe for recovery purposes.`);
+        }
+
+        // Clear all data
+        function clearAllData() {
+            const confirmed = confirm('⚠️ WARNING: Clear All Data?\n\nThis will:\n• Delete all equipment data from all rooms\n• Clear all checklist entries\n• Clear all status updates\n• Clear all archived data\n• Keep school logo and settings\n\nThis action CANNOT be undone!\n\nAre you absolutely sure?');
+            
+            if (!confirmed) return;
+            
+            const doubleCheck = confirm('🔴 FINAL CONFIRMATION\n\nYou are about to permanently delete all equipment data.\n\nClick OK to proceed with data deletion.\nClick Cancel to abort.');
+            
+            if (!doubleCheck) return;
+            
+            // Clear all data except logo
+            for (const room of Object.keys(inventory)) {
+                for (const equipment of Object.keys(inventory[room])) {
+                    inventory[room][equipment] = { total: 0, active: 0, defective: 0 };
+                }
+            }
+            
+            checklistEntries = [];
+            statusUpdates = [];
+            archivedData = {};
+            
+            updateAllDisplays();
+            
+            alert('✅ All data has been cleared.\n\nThe system has been reset to default state.\nSchool logo and settings have been preserved.');
+        }
+
+        // Download Overview Report
+        function downloadOverview() {
+            const currentDate = new Date().toISOString().split('T')[0];
+            const currentTime = new Date().toLocaleTimeString();
+            
+            let csvContent = "data:text/csv;charset=utf-8,";
+            
+            // Header
+            csvContent += "TTC de la Salle Byumba - Complete Equipment Overview Report\n";
+            csvContent += "Location: Gicumbi, Rwanda\n";
+            csvContent += "Generated: " + currentDate + " at " + currentTime + "\n";
+            csvContent += "Contact: delasallettc@yahoo.fr | WhatsApp: +250786480036\n\n";
+            
+            // Summary Statistics
+            let totalAll = 0, activeAll = 0, defectiveAll = 0;
+            
+            csvContent += "=== SUMMARY STATISTICS ===\n";
+            csvContent += "Total Rooms,3\n";
+            
+            for (const [room, equipment] of Object.entries(inventory)) {
+                for (const data of Object.values(equipment)) {
+                    totalAll += data.total;
+                    activeAll += data.active;
+                    defectiveAll += data.defective;
+                }
+            }
+            
+            csvContent += "Total Equipment," + totalAll + "\n";
+            csvContent += "Active Items," + activeAll + "\n";
+            csvContent += "Defective Items," + defectiveAll + "\n\n";
+            
+            // Detailed breakdown by room
+            csvContent += "=== DETAILED EQUIPMENT BY ROOM ===\n\n";
+            
+            for (const [room, equipment] of Object.entries(inventory)) {
+                csvContent += room + "\n";
+                csvContent += "Equipment,Total,Active,Defective,Status\n";
+                
+                for (const [eq, data] of Object.entries(equipment)) {
+                    const status = data.defective > 0 ? 'Needs Repair' : (data.total > 0 ? 'Good' : 'None');
+                    csvContent += `"${eq}",${data.total},${data.active},${data.defective},"${status}"\n`;
+                }
+                
+                // Room subtotal
+                let roomTotal = 0, roomActive = 0, roomDefective = 0;
+                for (const data of Object.values(equipment)) {
+                    roomTotal += data.total;
+                    roomActive += data.active;
+                    roomDefective += data.defective;
+                }
+                csvContent += `SUBTOTAL,${roomTotal},${roomActive},${roomDefective},\n\n`;
+            }
+            
+            // Grand Total
+            csvContent += "=== GRAND TOTAL ===\n";
+            csvContent += `All Rooms,${totalAll},${activeAll},${defectiveAll},\n\n`;
+            
+            // Equipment condition percentage
+            if (totalAll > 0) {
+                const activePercent = ((activeAll / totalAll) * 100).toFixed(1);
+                const defectivePercent = ((defectiveAll / totalAll) * 100).toFixed(1);
+                csvContent += "=== CONDITION ANALYSIS ===\n";
+                csvContent += `Active Percentage,${activePercent}%\n`;
+                csvContent += `Defective Percentage,${defectivePercent}%\n\n`;
+            }
+            
+            csvContent += "Report generated by TTC de la Salle Byumba Equipment Management System\n";
+            
+            // Create download
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Equipment_Overview_Report_${currentDate}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            alert(`✅ Overview report downloaded successfully!\n\nFilename: Equipment_Overview_Report_${currentDate}.csv\n\nThe report includes:\n• Summary statistics\n• Detailed equipment by room\n• Condition analysis\n• Grand totals`);
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeInventory();
+            
+            // Load last backup time
+            const lastBackup = localStorage.getItem('lastBackup');
+            const lastBackupEl = document.getElementById('lastBackup');
+            if (lastBackup && lastBackupEl) {
+                lastBackupEl.value = lastBackup;
+            }
+        });
+
+        // Export Room Data to CSV
+        function exportRoomCSV(roomName) {
+            const currentDate = new Date().toISOString().split('T')[0];
+            let csvContent = "data:text/csv;charset=utf-8,";
+            
+            // CSV Headers
+            csvContent += "TTC de la Salle Byumba - Equipment Report\n";
+            csvContent += "Location: Gicumbi, Rwanda\n";
+            csvContent += "Room: " + roomName + "\n";
+            csvContent += "Date: " + currentDate + "\n\n";
+            csvContent += "Equipment,Total Quantity,Active,Defective,Status\n";
+            
+            // Add equipment data
+            if (inventory[roomName]) {
+                for (const [equipment, data] of Object.entries(inventory[roomName])) {
+                    const status = data.defective > 0 ? 'Needs Repair' : 'Good';
+                    csvContent += `"${equipment}",${data.total},${data.active},${data.defective},"${status}"\n`;
+                }
+            }
+            
+            // Add summary
+            let totalItems = 0, totalActive = 0, totalDefective = 0;
+            if (inventory[roomName]) {
+                for (const data of Object.values(inventory[roomName])) {
+                    totalItems += data.total;
+                    totalActive += data.active;
+                    totalDefective += data.defective;
+                }
+            }
+            
+            csvContent += `\nSUMMARY,${totalItems},${totalActive},${totalDefective},\n`;
+            
+            // Create download link
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `${roomName.replace(' ', '_')}_Equipment_${currentDate}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            alert(`✅ CSV file exported successfully for ${roomName}!`);
+        }
+
+        // Archive Room Data
+        function archiveRoom(roomName) {
+            const confirmed = confirm(`Are you sure you want to archive all data for ${roomName}?\n\nThis will:\n• Export current data to CSV\n• Create a timestamped backup\n• Save data for restoration\n• Reset all quantities to zero\n\nYou can restore this data later using the Restore button.`);
+            
+            if (!confirmed) return;
+            
+            // Save current data to archive before resetting
+            archivedData[roomName] = {
+                data: JSON.parse(JSON.stringify(inventory[roomName])), // Deep copy
+                timestamp: new Date().toISOString(),
+                date: new Date().toLocaleDateString(),
+                time: new Date().toLocaleTimeString()
+            };
+            
+            // First export the data
+            const currentDate = new Date().toISOString().split('T')[0];
+            const currentTime = new Date().toLocaleTimeString();
+            
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "TTC de la Salle Byumba - ARCHIVED Equipment Report\n";
+            csvContent += "Location: Gicumbi, Rwanda\n";
+            csvContent += "Room: " + roomName + "\n";
+            csvContent += "Archive Date: " + currentDate + " " + currentTime + "\n\n";
+            csvContent += "Equipment,Total Quantity,Active,Defective,Status,Notes\n";
+            
+            // Add all equipment with notes
+            if (inventory[roomName]) {
+                for (const [equipment, data] of Object.entries(inventory[roomName])) {
+                    const status = data.defective > 0 ? 'Needs Repair' : 'Good';
+                    csvContent += `"${equipment}",${data.total},${data.active},${data.defective},"${status}","Archived on ${currentDate}"\n`;
+                }
+            }
+            
+            // Download archive
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `ARCHIVE_${roomName.replace(' ', '_')}_${currentDate}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Reset inventory for this room
+            if (inventory[roomName]) {
+                for (const equipment of Object.keys(inventory[roomName])) {
+                    inventory[roomName][equipment] = {
+                        total: 0,
+                        active: 0,
+                        defective: 0
+                    };
+                }
+            }
+            
+            // Update displays
+            updateAllDisplays();
+            
+            alert(`🗄️ ${roomName} data has been archived!\n\nArchive file downloaded: ARCHIVE_${roomName.replace(' ', '_')}_${currentDate}.csv\n\nAll equipment quantities have been reset to zero.\n\n✅ Archive saved and can be restored anytime using the "Restore Archive" button.`);
+        }
+
+        // Restore Room Data
+        function restoreRoom(roomName) {
+            // Check if there's archived data
+            if (!archivedData[roomName]) {
+                alert(`❌ No archived data found for ${roomName}.\n\nPlease archive data first before you can restore it.`);
+                return;
+            }
+            
+            const archiveInfo = archivedData[roomName];
+            const confirmed = confirm(`Found archived data for ${roomName}:\n\nArchived on: ${archiveInfo.date} at ${archiveInfo.time}\n\nDo you want to restore this data?\n\nThis will replace all current quantities with the archived values.`);
+            
+            if (!confirmed) return;
+            
+            // Restore the data
+            inventory[roomName] = JSON.parse(JSON.stringify(archiveInfo.data)); // Deep copy
+            
+            // Update displays
+            updateAllDisplays();
+            
+            alert(`♻️ ${roomName} data has been successfully restored!\n\nRestored from archive: ${archiveInfo.date} at ${archiveInfo.time}\n\nAll equipment quantities have been restored to their archived values.`);
+        }
+    </script>
+</body>
+</html>
